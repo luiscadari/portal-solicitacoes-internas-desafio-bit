@@ -3,7 +3,12 @@ import { AUTH_COOKIE } from '../src/config/cookies';
 import { signToken } from '../src/lib/jwt';
 import type { AuthUser } from '../src/types/express';
 
-export const colaborador: AuthUser = { id: 1, username: 'colaborador', name: 'Carlos Colaborador', role: Role.COLABORADOR };
+export const colaborador: AuthUser = {
+  id: 1,
+  username: 'colaborador',
+  name: 'Carlos Colaborador',
+  role: Role.COLABORADOR,
+};
 export const outroColaborador: AuthUser = { id: 2, username: 'maria', name: 'Maria Souza', role: Role.COLABORADOR };
 export const atendente: AuthUser = { id: 3, username: 'atendente', name: 'Ana Atendente', role: Role.ATENDENTE };
 

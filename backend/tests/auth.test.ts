@@ -21,7 +21,12 @@ describe('Autenticação', () => {
         .send({ username: 'colaborador', password: 'colaborador123' });
 
       expect(res.status).toBe(200);
-      expect(res.body.user).toEqual({ id: 1, username: 'colaborador', name: 'Carlos Colaborador', role: Role.COLABORADOR });
+      expect(res.body.user).toEqual({
+        id: 1,
+        username: 'colaborador',
+        name: 'Carlos Colaborador',
+        role: Role.COLABORADOR,
+      });
       expect(res.body.user.passwordHash).toBeUndefined();
       const cookie = String(res.headers['set-cookie']);
       expect(cookie).toContain(`${AUTH_COOKIE}=`);

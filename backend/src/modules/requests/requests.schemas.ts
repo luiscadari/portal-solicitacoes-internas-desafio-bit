@@ -42,8 +42,14 @@ export const listRequestsSchema = z
     pageSize: z.coerce.number().int().min(1).max(100).default(10),
     from: z.preprocess(emptyToUndefined, dateParam),
     to: z.preprocess(emptyToUndefined, dateParam),
-    category: z.preprocess(emptyToUndefined, z.nativeEnum(Category, { errorMap: () => ({ message: 'Categoria inválida' }) }).optional()),
-    status: z.preprocess(emptyToUndefined, z.nativeEnum(RequestStatus, { errorMap: () => ({ message: 'Status inválido' }) }).optional()),
+    category: z.preprocess(
+      emptyToUndefined,
+      z.nativeEnum(Category, { errorMap: () => ({ message: 'Categoria inválida' }) }).optional(),
+    ),
+    status: z.preprocess(
+      emptyToUndefined,
+      z.nativeEnum(RequestStatus, { errorMap: () => ({ message: 'Status inválido' }) }).optional(),
+    ),
     q: z.preprocess(emptyToUndefined, z.string().trim().max(120).optional()),
   })
   .refine((data) => !data.from || !data.to || Date.parse(data.from) <= Date.parse(data.to), {

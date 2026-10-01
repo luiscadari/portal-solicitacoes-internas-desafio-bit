@@ -94,7 +94,12 @@ describe('Solicitações', () => {
       const res = await request(app)
         .post('/api/requests')
         .set('Cookie', authCookie(colaborador))
-        .send({ title: 'Notebook não liga', description: 'Meu notebook não liga.', category: 'TI', status: 'CONCLUIDO' });
+        .send({
+          title: 'Notebook não liga',
+          description: 'Meu notebook não liga.',
+          category: 'TI',
+          status: 'CONCLUIDO',
+        });
 
       expect(res.status).toBe(201);
       const { data } = prismaMock.request.create.mock.calls[0][0];
@@ -129,7 +134,9 @@ describe('Solicitações', () => {
       const res = await request(app).put('/api/requests/10').set('Cookie', authCookie(colaborador)).send(payload);
 
       expect(res.status).toBe(200);
-      expect(prismaMock.request.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 10 }, data: payload }));
+      expect(prismaMock.request.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 10 }, data: payload }),
+      );
     });
 
     it('bloqueia edição de solicitação que não está aberta', async () => {
@@ -188,7 +195,11 @@ describe('Solicitações', () => {
           data: {
             status: RequestStatus.EM_ATENDIMENTO,
             history: {
-              create: { fromStatus: RequestStatus.ABERTO, toStatus: RequestStatus.EM_ATENDIMENTO, changedById: atendente.id },
+              create: {
+                fromStatus: RequestStatus.ABERTO,
+                toStatus: RequestStatus.EM_ATENDIMENTO,
+                changedById: atendente.id,
+              },
             },
           },
         }),

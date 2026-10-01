@@ -1,10 +1,5 @@
 import type { Request, Response } from 'express';
-import type {
-  CreateRequestInput,
-  ListRequestsQuery,
-  UpdateRequestInput,
-  UpdateStatusInput,
-} from './requests.schemas';
+import type { CreateRequestInput, ListRequestsQuery, UpdateRequestInput, UpdateStatusInput } from './requests.schemas';
 import * as service from './requests.service';
 
 const idOf = (res: Response) => (res.locals.params as { id: number }).id;

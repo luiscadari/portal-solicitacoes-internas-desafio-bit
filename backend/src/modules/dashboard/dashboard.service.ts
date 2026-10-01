@@ -19,8 +19,7 @@ export async function getSummary(user: AuthUser): Promise<DashboardSummary> {
     prisma.request.groupBy({ by: ['category'], where, _count: { _all: true } }),
   ]);
 
-  const countStatus = (status: RequestStatus) =>
-    byStatus.find((row) => row.status === status)?._count._all ?? 0;
+  const countStatus = (status: RequestStatus) => byStatus.find((row) => row.status === status)?._count._all ?? 0;
 
   const porCategoria = Object.values(Category).reduce(
     (acc, category) => {
