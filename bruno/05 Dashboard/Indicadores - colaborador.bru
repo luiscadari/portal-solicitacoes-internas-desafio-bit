@@ -1,0 +1,23 @@
+meta {
+  name: Indicadores - colaborador
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/dashboard
+  body: none
+  auth: none
+}
+
+tests {
+  test("retorna os indicadores", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("considera apenas as solicitações do colaborador", function () {
+    const d = res.getBody();
+    expect(d.total).to.equal(d.aberto + d.emAtendimento + d.concluido);
+    expect(d.concluido).to.be.at.least(1);
+  });
+}

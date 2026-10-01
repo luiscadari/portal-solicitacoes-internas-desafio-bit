@@ -1,0 +1,27 @@
+meta {
+  name: Login - campos obrigatorios
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("valida os campos", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("detalha os campos inválidos", function () {
+    const { details } = res.getBody();
+    expect(details).to.have.property("username");
+    expect(details).to.have.property("password");
+  });
+}

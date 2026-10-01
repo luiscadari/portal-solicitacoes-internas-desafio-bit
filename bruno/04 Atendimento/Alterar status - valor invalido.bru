@@ -1,0 +1,23 @@
+meta {
+  name: Alterar status - valor invalido
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{requestId}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "CANCELADO"
+  }
+}
+
+tests {
+  test("rejeita status inexistente", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+}

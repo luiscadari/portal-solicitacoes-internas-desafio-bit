@@ -1,0 +1,25 @@
+meta {
+  name: Editar - nao e o solicitante
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/requests/{{requestId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Tentativa de edição",
+    "description": "O atendente não é o solicitante.",
+    "category": "TI"
+  }
+}
+
+tests {
+  test("apenas o solicitante edita", function () {
+    expect(res.getStatus()).to.equal(403);
+  });
+}

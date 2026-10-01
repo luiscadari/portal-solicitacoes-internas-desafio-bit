@@ -1,0 +1,17 @@
+meta {
+  name: Detalhar solicitacao excluida
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/requests/{{tempRequestId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("solicitação não existe mais", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+}

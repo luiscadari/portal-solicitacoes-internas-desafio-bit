@@ -1,0 +1,52 @@
+meta {
+  name: Listar com filtros
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/requests?q=monitor&category=TI&status=ABERTO&from={{from}}&to={{to}}
+  body: none
+  auth: none
+}
+
+params:query {
+  q: monitor
+  category: TI
+  status: ABERTO
+  from: {{from}}
+  to: {{to}}
+}
+
+script:pre-request {
+  // Período: últimos 7 dias até hoje (AAAA-MM-DD)
+  const toDate = new Date();
+  const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  bru.setVar("from", fromDate.toISOString().slice(0, 10));
+  bru.setVar("to", toDate.toISOString().slice(0, 10));
+}
+
+tests {
+  test("aplica os filtros", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("todos os itens respeitam os filtros", function () {
+    const { data } = res.getBody();
+    expect(data.length).to.be.greaterThan(0);
+    data.forEach((item) => {
+      expect(item.title.toLowerCase()).to.contain("monitor");
+      expect(item.category).to.equal("TI");
+      expect(item.status).to.equal("ABERTO");
+    });
+  });
+
+  test("encontra a solicitação criada", function () {
+    const ids = res.getBody().data.map((item) => item.id);
+    expect(ids).to.include(bru.getVar("requestId"));
+  });
+}
+
+docs {
+  Filtros disponíveis: `q` (texto no título), `category`, `status`, `from` e `to` (período da abertura, AAAA-MM-DD ou ISO 8601), `page` e `pageSize`.
+}

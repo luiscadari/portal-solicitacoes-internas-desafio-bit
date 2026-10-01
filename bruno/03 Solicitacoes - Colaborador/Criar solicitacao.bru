@@ -1,0 +1,44 @@
+meta {
+  name: Criar solicitacao
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/requests
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Monitor piscando (teste Bruno)",
+    "description": "O monitor apresenta oscilações de imagem desde a manhã.",
+    "category": "TI",
+    "status": "CONCLUIDO"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("requestId", res.getBody().id);
+  }
+}
+
+tests {
+  test("cria a solicitação", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("preenche os campos automáticos", function () {
+    const body = res.getBody();
+    expect(body.status).to.equal("ABERTO");
+    expect(body.requester.username).to.equal(bru.getEnvVar("colaboradorUser"));
+    expect(body.createdAt).to.be.a("string");
+    expect(body.history).to.have.lengthOf(1);
+  });
+}
+
+docs {
+  Cria uma solicitação. O `status` enviado é **ignorado**: toda solicitação nasce como `ABERTO`, com data e solicitante automáticos. O código gerado é salvo em `requestId`.
+}

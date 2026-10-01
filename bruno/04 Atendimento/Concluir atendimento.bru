@@ -1,0 +1,28 @@
+meta {
+  name: Concluir atendimento
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{requestId}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "CONCLUIDO"
+  }
+}
+
+tests {
+  test("conclui a solicitação", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("histórico completo", function () {
+    const statuses = res.getBody().history.map((h) => h.toStatus);
+    expect(statuses).to.deep.equal(["ABERTO", "EM_ATENDIMENTO", "CONCLUIDO"]);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Sessao sem login
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+tests {
+  test("exige autenticação", function () {
+    expect(res.getStatus()).to.equal(401);
+  });
+}
+
+docs {
+  Sem cookie de sessão, a rota `/auth/me` retorna **401**.
+}

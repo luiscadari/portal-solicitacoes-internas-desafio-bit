@@ -1,0 +1,36 @@
+meta {
+  name: Login - senha incorreta
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{colaboradorUser}}",
+    "password": "senha-errada"
+  }
+}
+
+script:pre-request {
+  bru.setVar("token", "");
+}
+
+tests {
+  test("rejeita credenciais inválidas", function () {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("retorna mensagem de erro", function () {
+    expect(res.getBody().message).to.equal("Usuário ou senha inválidos");
+  });
+}
+
+docs {
+  Credenciais inválidas devem retornar **401** sem definir cookie.
+}

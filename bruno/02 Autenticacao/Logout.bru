@@ -1,0 +1,26 @@
+meta {
+  name: Logout
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: none
+}
+
+script:post-response {
+  bru.setVar("token", "");
+}
+
+tests {
+  test("encerra a sessão", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+
+  test("expira o cookie", function () {
+    const cookie = [].concat(res.getHeader("set-cookie") || []).join(";");
+    expect(cookie).to.contain("portal_token=;");
+  });
+}

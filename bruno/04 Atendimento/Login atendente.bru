@@ -1,0 +1,48 @@
+meta {
+  name: Login atendente
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{atendenteUser}}",
+    "password": "{{atendentePass}}"
+  }
+}
+
+script:post-response {
+  const cookies = [].concat(res.getHeader("set-cookie") || []);
+  const session = cookies.find((c) => c.startsWith("portal_token="));
+  if (session) {
+    bru.setVar("token", session.split(";")[0].substring("portal_token=".length));
+  }
+}
+
+tests {
+  test("autentica com sucesso", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("retorna o usuário sem a senha", function () {
+    const { user } = res.getBody();
+    expect(user.username).to.equal(bru.getEnvVar("atendenteUser"));
+    expect(user).to.not.have.property("passwordHash");
+  });
+
+  test("define o cookie de sessão httpOnly", function () {
+    const cookie = [].concat(res.getHeader("set-cookie") || []).join(";");
+    expect(cookie).to.contain("portal_token=");
+    expect(cookie).to.contain("HttpOnly");
+  });
+}
+
+docs {
+  Autentica como **atendente** e guarda o token da sessão na variável `token`.
+}

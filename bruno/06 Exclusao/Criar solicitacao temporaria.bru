@@ -1,0 +1,31 @@
+meta {
+  name: Criar solicitacao temporaria
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/requests
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Solicitação temporária (teste Bruno)",
+    "description": "Será excluída na sequência.",
+    "category": "RH"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("tempRequestId", res.getBody().id);
+  }
+}
+
+tests {
+  test("cria a solicitação", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

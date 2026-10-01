@@ -1,0 +1,17 @@
+meta {
+  name: Excluir solicitacao aberta
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/requests/{{tempRequestId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("exclui a solicitação", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
