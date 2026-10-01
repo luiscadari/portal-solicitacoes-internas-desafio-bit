@@ -70,7 +70,7 @@ Como o Nginx (ou o proxy do Vite em desenvolvimento) serve a SPA e a API **na me
 | **cookie-parser** | 1.4 | Leitura do cookie de sessão `httpOnly`. |
 | **helmet** | 8 | Cabeçalhos HTTP de segurança (CSP, `X-Content-Type-Options`, HSTS e outros) com configuração mínima. |
 | **cors** | 2.8 | Controle das origens autorizadas a chamar a API diretamente (útil em desenvolvimento ou se o frontend for hospedado em outro domínio). |
-| **express-rate-limit** | 8 | Limita as tentativas de login (20 a cada 15 minutos por IP) para mitigar força bruta. |
+| **express-rate-limit** | 8 | Limita as tentativas de login **malsucedidas** (padrão: 20 a cada 15 minutos por IP, configurável em `LOGIN_RATE_LIMIT`) para mitigar força bruta, sem bloquear o uso legítimo. |
 | **dotenv** | 18 | Carrega o `backend/.env` em desenvolvimento, sem sobrescrever variáveis já definidas pelo Docker/CI. |
 | **tsx** | 4 | Executa TypeScript diretamente com *watch* no desenvolvimento (`npm run dev`), sem etapa de build. |
 
@@ -100,7 +100,7 @@ Como o Nginx (ou o proxy do Vite em desenvolvimento) serve a SPA e a API **na me
 | **jest-mock-extended** | Backend | *Mock* profundo e tipado do `PrismaClient`. Os testes rodam em segundos, sem banco, e verificam exatamente as consultas enviadas ao ORM (filtros, escopo por usuário, histórico). |
 | **Testing Library** (React, user-event, jest-dom) + **jsdom** | Frontend | Testes orientados ao comportamento do usuário (encontrar por rótulo/papel, digitar, clicar), resistentes a refatorações internas, que reforçam a acessibilidade da interface. |
 
-Totais atuais: **38 testes no backend** e **29 no frontend**. Além deles, o fluxo completo foi verificado manualmente de ponta a ponta no ambiente Docker (login, CRUD, alteração de status, filtros, logout, desktop e mobile).
+Totais atuais: **44 testes no backend** (incluindo o gerador de dados fictícios do seed) e **29 no frontend**. Além deles, o fluxo completo foi verificado manualmente de ponta a ponta no ambiente Docker (login, CRUD, alteração de status, filtros, logout, desktop e mobile).
 
 ### 3.5 Infraestrutura e ferramentas
 
@@ -110,6 +110,8 @@ Totais atuais: **38 testes no backend** e **29 no frontend**. Além deles, o flu
 | **Docker Compose** | Orquestra `db`, `api` e `web` com *healthchecks* e ordem de inicialização (`depends_on: service_healthy`), volume persistente para o banco e variáveis com valores padrão. Assim, `docker compose up` funciona mesmo sem `.env`. |
 | **Nginx** (alpine) | Serve os arquivos estáticos da SPA com *fallback* de rotas, compressão gzip e cache de *assets* com hash. Atua como **proxy reverso** de `/api`, colocando frontend e API na mesma origem. |
 | **Entrypoint da API** | Aplica `prisma migrate deploy` e o **seed idempotente** a cada subida: o primeiro acesso já tem usuários e dados de exemplo, e reinícios não duplicam registros. |
+| **Seed com dados fictícios** | `prisma/seed-data.ts` gera 12 usuários e 80 solicitações nos últimos 90 dias, com status proporcionais à idade e histórico coerente. A geração usa um PRNG com semente fixa (determinística) e fica separada do acesso ao banco, o que permite testá-la. Assim, filtros, paginação e dashboard podem ser avaliados com volume realista logo na primeira subida. |
+| **Bruno** | Cliente de API *open source* cujas coleções são arquivos de texto (`.bru`) versionados junto com o código, sem conta nem nuvem. A coleção em `bruno/` documenta e testa os endpoints com asserções, nos ambientes Docker e Local, e roda no app ou pela CLI (`bru run`), podendo ser usada em CI. |
 | **start.sh / start.ps1** | Um único comando (Linux/macOS e Windows) para subir a aplicação, aguardar a saúde da API e exibir URL e credenciais. |
 | **Prettier** | Formatação consistente do código (`.prettierrc` na raiz). |
 | **EditorConfig** / **.gitattributes** | Padronizam a indentação e as quebras de linha. O `.gitattributes` força LF nos scripts `.sh`, evitando que o entrypoint quebre ao clonar no Windows. |

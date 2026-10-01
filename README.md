@@ -25,6 +25,7 @@ Portal web para que colaboradores registrem demandas internas (TI, RH, Compras, 
 - [Execução](#execução)
 - [Acesso e usuários de teste](#acesso-e-usuários-de-teste)
 - [Testes automatizados](#testes-automatizados)
+- [Testando a API com o Bruno](#testando-a-api-com-o-bruno)
 - [Referência da API](#referência-da-api)
 - [Solução de problemas](#solução-de-problemas)
 
@@ -67,7 +68,7 @@ O Nginx serve o frontend e encaminha `/api` para a API, de modo que **frontend e
 ```
 .
 ├── backend/                  # API REST (Node.js + Express + Prisma)
-│   ├── prisma/               # schema.prisma, migrations e seed
+│   ├── prisma/               # schema.prisma, migrations, seed e dados fictícios (seed-data.ts)
 │   ├── src/
 │   │   ├── config/           # variáveis de ambiente (validadas com zod) e cookies
 │   │   ├── lib/              # Prisma Client e JWT
@@ -85,6 +86,7 @@ O Nginx serve o frontend e encaminha `/api` para a API, de modo que **frontend e
 │   │   ├── pages/            # telas
 │   │   └── services/         # cliente HTTP (axios)
 │   └── Dockerfile
+├── bruno/                    # coleção Bruno para testar a API
 ├── docs/
 │   ├── MEMORIAL_TECNICO.md
 │   └── screenshots/
@@ -235,6 +237,7 @@ Todas possuem valor padrão; o `.env` é opcional.
 | `JWT_EXPIRES_IN` | `8h` | Duração da sessão (`30m`, `8h`, `1d`...) |
 | `CORS_ORIGIN` | `http://localhost:8080` | Origens permitidas (separadas por vírgula) para acesso direto à API |
 | `COOKIE_SECURE` | `false` | `true` quando servido via HTTPS |
+| `LOGIN_RATE_LIMIT` | `20` | Tentativas de login **malsucedidas** permitidas por IP a cada 15 minutos |
 | `WEB_PORT` | `8080` | Porta do frontend exposta no host |
 
 ### Variáveis de ambiente — Backend local (`backend/.env`)
@@ -247,6 +250,7 @@ Todas possuem valor padrão; o `.env` é opcional.
 | `JWT_EXPIRES_IN` | `8h` | Duração da sessão |
 | `CORS_ORIGIN` | `http://localhost:5173` | Origem do frontend |
 | `COOKIE_SECURE` | `false` | Cookie apenas em HTTPS |
+| `LOGIN_RATE_LIMIT` | `20` | Tentativas de login malsucedidas por IP a cada 15 minutos |
 | `NODE_ENV` | `development` | `development`, `test` ou `production` |
 
 As variáveis são validadas na inicialização (zod); valores inválidos interrompem a API com uma mensagem clara.
@@ -308,8 +312,17 @@ Outros scripts:
 | `colaborador` | `colaborador123` | Colaborador | Criar, editar e excluir solicitações abertas; acompanhar o status das próprias solicitações |
 | `maria` | `maria123` | Colaborador | Mesmo perfil, com outras solicitações (verifica o isolamento entre colaboradores) |
 | `atendente` | `atendente123` | Atendente | Ver todas as solicitações, alterar status e consultar o histórico |
+| `bruno.lima` | `senha123` | Atendente | Segundo atendente (aparece no histórico das solicitações de exemplo) |
 
-O banco já inicia com **10 solicitações** de exemplo, distribuídas entre categorias, status e datas, para facilitar o teste dos filtros e do dashboard.
+### Dados fictícios (seed)
+
+Na primeira subida, o banco é populado automaticamente com dados fictícios, gerados por `backend/prisma/seed-data.ts`:
+
+- **12 usuários**: os 4 acima e mais 8 colaboradores fictícios, todos com a senha `senha123` (`joao.pereira`, `fernanda.alves`, `ricardo.santos`, `juliana.costa`, `paulo.mendes`, `camila.rocha`, `lucas.martins`, `beatriz.oliveira`);
+- **80 solicitações** abertas nos **últimos 90 dias**, em todas as categorias, com títulos e descrições realistas;
+- **status coerentes com a idade** da solicitação (as antigas tendem a estar concluídas) e **histórico completo** de cada mudança, feita por um dos atendentes.
+
+A geração é determinística e o seed é idempotente: reiniciar a API não duplica dados. Para recriar a base do zero, execute `docker compose down -v` e suba novamente.
 
 ### Roteiro sugerido
 
@@ -325,7 +338,7 @@ O banco já inicia com **10 solicitações** de exemplo, distribuídas entre cat
 Ambos os projetos usam **Jest**. Os testes não dependem de banco de dados nem da API em execução.
 
 ```bash
-cd backend && npm test      # 38 testes: rotas HTTP (Supertest) com Prisma mockado
+cd backend && npm test      # 44 testes: rotas HTTP (Supertest) com Prisma mockado e gerador do seed
 cd frontend && npm test     # 29 testes: componentes, páginas e utilitários (Testing Library + jsdom)
 ```
 
@@ -333,7 +346,43 @@ Use `npm run test:coverage` para o relatório de cobertura (`coverage/`).
 
 | Backend | Frontend |
 | --- | --- |
-| Login/logout/sessão, validação de entrada, CRUD com regras de dono e status, alteração de status (RBAC + histórico), filtros, dashboard e utilitários | Login, rota protegida, dashboard, formulário de solicitação, filtros, tabela/ações por perfil, badges e utilitários |
+| Login/logout/sessão, validação de entrada, CRUD com regras de dono e status, alteração de status (RBAC + histórico), filtros, dashboard, utilitários e dados fictícios do seed | Login, rota protegida, dashboard, formulário de solicitação, filtros, tabela/ações por perfil, badges e utilitários |
+
+---
+
+## Testando a API com o Bruno
+
+O diretório [`bruno/`](bruno) contém uma coleção do [Bruno](https://www.usebruno.com/), cliente de API *open source*, com **32 requisições** e **59 asserções** que percorrem todos os fluxos da API.
+
+| Pasta | O que cobre |
+| --- | --- |
+| `01 Health` | Health check |
+| `02 Autenticacao` | Login inválido e válido, validação, sessão atual, logout e sessão encerrada |
+| `03 Solicitacoes - Colaborador` | Criar (com campos automáticos), validação, listar, filtrar (período, categoria, status e texto), detalhar, editar e tentar alterar status (403) |
+| `04 Atendimento` | Listar todas, iniciar e concluir atendimento com histórico, status repetido (409) ou inválido (400), edição por não solicitante (403) e 404 |
+| `05 Dashboard` | Indicadores do atendente e do colaborador |
+| `06 Exclusao` | Exclusão bloqueada (409), exclusão de solicitação aberta (204) e consulta após excluir (404) |
+
+### No aplicativo Bruno
+
+1. Instale o Bruno: <https://www.usebruno.com/downloads>.
+2. **Open Collection** → selecione a pasta `bruno/` do repositório.
+3. No seletor de ambientes (canto superior direito), escolha:
+   - **Docker**: `http://localhost:8080/api` (via Nginx, após `./start.sh`);
+   - **Local**: `http://localhost:3333/api` (API direta, Docker ou `npm run dev`).
+4. Execute as requisições individualmente, em ordem, ou a coleção inteira pelo **Runner** (botão *Run* da coleção).
+
+A sessão é automática: as requisições de login guardam o token na variável `token`, e o cabeçalho `Cookie` da coleção o envia nas chamadas seguintes. As requisições são encadeadas (por exemplo, o código da solicitação criada fica em `requestId`), por isso o Runner executa as pastas em ordem.
+
+### Pela linha de comando
+
+```bash
+npm install -g @usebruno/cli
+cd bruno
+bru run --env Docker      # ou: bru run --env Local
+```
+
+A coleção pode ser executada várias vezes seguidas: cada execução cria os próprios registros. Só as tentativas de login malsucedidas contam para o limite `LOGIN_RATE_LIMIT`.
 
 ---
 
