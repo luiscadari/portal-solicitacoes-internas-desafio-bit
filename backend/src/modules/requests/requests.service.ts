@@ -2,11 +2,12 @@ import { Prisma, RequestStatus, Role } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import type { AuthUser } from '../../types/express';
 import { AppError } from '../../utils/app-error';
-import type {
-  CreateRequestInput,
-  ListRequestsQuery,
-  UpdateRequestInput,
-  UpdateStatusInput,
+import {
+  endBoundary,
+  type CreateRequestInput,
+  type ListRequestsQuery,
+  type UpdateRequestInput,
+  type UpdateStatusInput,
 } from './requests.schemas';
 
 const userSummary = { select: { id: true, name: true, username: true } } as const;
@@ -23,8 +24,26 @@ export function scopeByUser(user: AuthUser): Prisma.RequestWhereInput {
   return user.role === Role.ATENDENTE ? {} : { requesterId: user.id };
 }
 
+/** Monta o filtro do Prisma a partir dos parâmetros de consulta (período, categoria, status e texto). */
+export function buildWhere(user: AuthUser, query: Partial<ListRequestsQuery>): Prisma.RequestWhereInput {
+  const where: Prisma.RequestWhereInput = { ...scopeByUser(user) };
+
+  if (query.category) where.category = query.category;
+  if (query.status) where.status = query.status;
+  if (query.q) where.title = { contains: query.q, mode: 'insensitive' };
+
+  if (query.from || query.to) {
+    where.createdAt = {
+      ...(query.from && { gte: new Date(query.from) }),
+      ...(query.to && { lt: endBoundary(query.to) }),
+    };
+  }
+
+  return where;
+}
+
 export async function list(user: AuthUser, query: ListRequestsQuery) {
-  const where: Prisma.RequestWhereInput = scopeByUser(user);
+  const where = buildWhere(user, query);
   const { page, pageSize } = query;
 
   const [total, data] = await prisma.$transaction([
