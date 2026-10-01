@@ -21,8 +21,6 @@ export function formatCode(id: number): string {
 export function localDayBoundary(date: string, boundary: 'start' | 'end'): string {
   const [year, month, day] = date.split('-').map(Number);
   const value =
-    boundary === 'start'
-      ? new Date(year, month - 1, day, 0, 0, 0, 0)
-      : new Date(year, month - 1, day, 23, 59, 59, 999);
+    boundary === 'start' ? new Date(year, month - 1, day, 0, 0, 0, 0) : new Date(year, month - 1, day, 23, 59, 59, 999);
   return value.toISOString();
 }
