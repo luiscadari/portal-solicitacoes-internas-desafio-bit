@@ -124,9 +124,14 @@ async function main() {
 
   const attendantId = userIds.atendente;
 
+  const HOUR = 60 * 60 * 1000;
+
   for (const item of requests) {
     const createdAt = daysAgo(item.daysAgo);
     const requesterId = userIds[item.requester];
+    // Transições simuladas: atendimento iniciado 2h após a abertura e concluído 1 dia depois (sem passar de agora).
+    const startedAt = new Date(Math.min(createdAt.getTime() + 2 * HOUR, Date.now()));
+    const finishedAt = new Date(Math.min(createdAt.getTime() + 26 * HOUR, Date.now()));
 
     const history: {
       fromStatus: RequestStatus | null;
@@ -139,7 +144,7 @@ async function main() {
         fromStatus: RequestStatus.ABERTO,
         toStatus: RequestStatus.EM_ATENDIMENTO,
         changedById: attendantId,
-        changedAt: createdAt,
+        changedAt: startedAt,
       });
     }
     if (item.status === RequestStatus.CONCLUIDO) {
@@ -147,7 +152,7 @@ async function main() {
         fromStatus: RequestStatus.EM_ATENDIMENTO,
         toStatus: RequestStatus.CONCLUIDO,
         changedById: attendantId,
-        changedAt: createdAt,
+        changedAt: finishedAt,
       });
     }
 
@@ -159,6 +164,7 @@ async function main() {
         status: item.status,
         requesterId,
         createdAt,
+        updatedAt: history[history.length - 1].changedAt,
         history: { create: history },
       },
     });
