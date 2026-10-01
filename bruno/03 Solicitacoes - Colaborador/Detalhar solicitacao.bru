@@ -1,0 +1,23 @@
+meta {
+  name: Detalhar solicitacao
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/requests/{{requestId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("retorna os detalhes", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("inclui o histórico de status", function () {
+    const body = res.getBody();
+    expect(body.id).to.equal(bru.getVar("requestId"));
+    expect(body.history[0].toStatus).to.equal("ABERTO");
+  });
+}

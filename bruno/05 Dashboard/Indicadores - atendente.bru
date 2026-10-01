@@ -1,0 +1,33 @@
+meta {
+  name: Indicadores - atendente
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/dashboard
+  body: none
+  auth: none
+}
+
+tests {
+  test("retorna os indicadores", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("total é a soma dos status", function () {
+    const d = res.getBody();
+    expect(d.total).to.equal(d.aberto + d.emAtendimento + d.concluido);
+  });
+
+  test("inclui a distribuição por categoria", function () {
+    const d = res.getBody();
+    expect(d.porCategoria).to.have.all.keys("TI", "RH", "COMPRAS", "FINANCEIRO", "INFRAESTRUTURA");
+    const soma = Object.values(d.porCategoria).reduce((a, b) => a + b, 0);
+    expect(soma).to.equal(d.total);
+  });
+}
+
+docs {
+  Usa a sessão do atendente (pasta anterior): indicadores de **todas** as solicitações.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Listar minhas solicitacoes
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/requests?page=1&pageSize=10
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  pageSize: 10
+}
+
+tests {
+  test("lista com paginação", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("retorna apenas solicitações do colaborador", function () {
+    const { data, meta } = res.getBody();
+    expect(meta.page).to.equal(1);
+    expect(data.length).to.be.at.most(10);
+    data.forEach((item) => expect(item.requester.username).to.equal(bru.getEnvVar("colaboradorUser")));
+  });
+}
+
+docs {
+  Colaboradores enxergam apenas as próprias solicitações.
+}

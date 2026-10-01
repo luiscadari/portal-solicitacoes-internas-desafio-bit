@@ -1,0 +1,80 @@
+// Schema do banco de dados do Portal de Solicitações Internas.
+// Documentação: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  COLABORADOR
+  ATENDENTE
+}
+
+enum Category {
+  TI
+  RH
+  COMPRAS
+  FINANCEIRO
+  INFRAESTRUTURA
+}
+
+enum RequestStatus {
+  ABERTO
+  EM_ATENDIMENTO
+  CONCLUIDO
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         Role     @default(COLABORADOR)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  requests      Request[]
+  statusChanges StatusHistory[]
+
+  @@map("users")
+}
+
+model Request {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(120)
+  description String
+  category    Category
+  status      RequestStatus @default(ABERTO)
+  requesterId Int           @map("requester_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  requester User            @relation(fields: [requesterId], references: [id])
+  history   StatusHistory[]
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@index([requesterId])
+  @@map("requests")
+}
+
+model StatusHistory {
+  id          Int            @id @default(autoincrement())
+  requestId   Int            @map("request_id")
+  fromStatus  RequestStatus? @map("from_status")
+  toStatus    RequestStatus  @map("to_status")
+  changedById Int            @map("changed_by_id")
+  changedAt   DateTime       @default(now()) @map("changed_at")
+
+  request   Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  changedBy User    @relation(fields: [changedById], references: [id])
+
+  @@index([requestId])
+  @@map("status_history")
+}

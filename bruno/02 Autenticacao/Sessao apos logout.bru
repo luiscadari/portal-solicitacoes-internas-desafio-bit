@@ -1,0 +1,17 @@
+meta {
+  name: Sessao apos logout
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+tests {
+  test("sessão encerrada", function () {
+    expect(res.getStatus()).to.equal(401);
+  });
+}

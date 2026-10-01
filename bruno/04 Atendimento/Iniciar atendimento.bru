@@ -1,0 +1,36 @@
+meta {
+  name: Iniciar atendimento
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{requestId}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "EM_ATENDIMENTO"
+  }
+}
+
+tests {
+  test("altera o status", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("registra a mudança no histórico", function () {
+    const { status, history } = res.getBody();
+    const last = history[history.length - 1];
+    expect(status).to.equal("EM_ATENDIMENTO");
+    expect(last.fromStatus).to.equal("ABERTO");
+    expect(last.toStatus).to.equal("EM_ATENDIMENTO");
+    expect(last.changedBy.username).to.equal(bru.getEnvVar("atendenteUser"));
+  });
+}
+
+docs {
+  Status possíveis: `ABERTO`, `EM_ATENDIMENTO` e `CONCLUIDO`. Somente o perfil **Atendente** pode alterar.
+}

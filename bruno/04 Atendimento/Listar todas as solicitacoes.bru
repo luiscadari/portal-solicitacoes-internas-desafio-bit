@@ -1,0 +1,32 @@
+meta {
+  name: Listar todas as solicitacoes
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/requests?pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  pageSize: 20
+}
+
+tests {
+  test("lista todas", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("inclui solicitações de vários colaboradores", function () {
+    const { data, meta } = res.getBody();
+    const requesters = new Set(data.map((item) => item.requester.username));
+    expect(meta.total).to.be.greaterThan(0);
+    expect(requesters.size).to.be.greaterThan(1);
+  });
+}
+
+docs {
+  Atendentes enxergam as solicitações de todos os colaboradores.
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Alterar para o mesmo status
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/requests/{{requestId}}/status
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "status": "EM_ATENDIMENTO"
+  }
+}
+
+tests {
+  test("rejeita status igual ao atual", function () {
+    expect(res.getStatus()).to.equal(409);
+  });
+}

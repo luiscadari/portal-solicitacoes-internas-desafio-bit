@@ -1,0 +1,30 @@
+meta {
+  name: Criar - dados invalidos
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/requests
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "a",
+    "description": "",
+    "category": "MARKETING"
+  }
+}
+
+tests {
+  test("rejeita dados inválidos", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  test("detalha os erros por campo", function () {
+    const { details } = res.getBody();
+    expect(details).to.have.all.keys("title", "description", "category");
+  });
+}

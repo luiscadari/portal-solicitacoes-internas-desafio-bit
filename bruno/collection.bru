@@ -1,0 +1,27 @@
+headers {
+  Cookie: portal_token={{token}}
+}
+
+docs {
+  # Portal de Solicitações Internas — API
+
+  Coleção para testar a API REST do portal.
+
+  ## Como usar
+  1. Suba a aplicação (`./start.sh` ou `docker compose up -d`).
+  2. Selecione o ambiente **Docker** (via Nginx, porta 8080) ou **Local** (API direta, porta 3333).
+  3. Execute as pastas em ordem ou rode a coleção inteira com o *Runner*.
+
+  ## Sessão
+  A API usa um JWT em cookie `httpOnly` (`portal_token`). As requisições de login
+  guardam o token na variável `token`, e o cabeçalho `Cookie` desta coleção o envia
+  em todas as chamadas. O logout limpa a variável.
+
+  ## Usuários de teste
+  | Usuário | Senha | Perfil |
+  | --- | --- | --- |
+  | colaborador | colaborador123 | Colaborador |
+  | maria | maria123 | Colaborador |
+  | atendente | atendente123 | Atendente |
+  | bruno.lima | senha123 | Atendente |
+}

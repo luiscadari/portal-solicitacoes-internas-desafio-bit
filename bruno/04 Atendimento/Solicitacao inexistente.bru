@@ -1,0 +1,17 @@
+meta {
+  name: Solicitacao inexistente
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/requests/999999
+  body: none
+  auth: none
+}
+
+tests {
+  test("retorna não encontrado", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+}

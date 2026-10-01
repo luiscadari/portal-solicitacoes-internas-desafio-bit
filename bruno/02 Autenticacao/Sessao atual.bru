@@ -1,0 +1,23 @@
+meta {
+  name: Sessao atual
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/auth/me
+  body: none
+  auth: none
+}
+
+tests {
+  test("retorna a sessão", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("identifica o usuário e o perfil", function () {
+    const { user } = res.getBody();
+    expect(user.username).to.equal(bru.getEnvVar("colaboradorUser"));
+    expect(user.role).to.equal("COLABORADOR");
+  });
+}

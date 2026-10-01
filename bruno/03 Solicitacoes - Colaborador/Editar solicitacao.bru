@@ -1,0 +1,31 @@
+meta {
+  name: Editar solicitacao
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/requests/{{requestId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Monitor piscando (teste Bruno - editado)",
+    "description": "O monitor apresenta oscilações de imagem e desliga sozinho.",
+    "category": "INFRAESTRUTURA"
+  }
+}
+
+tests {
+  test("edita a solicitação aberta", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("persiste as alterações", function () {
+    const body = res.getBody();
+    expect(body.title).to.equal("Monitor piscando (teste Bruno - editado)");
+    expect(body.category).to.equal("INFRAESTRUTURA");
+  });
+}
