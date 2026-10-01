@@ -51,8 +51,16 @@ export function useUpdateRequest(id: number) {
 }
 
 export function useDeleteRequest() {
-  const invalidate = useInvalidateRequests();
-  return useMutation({ mutationFn: (id: number) => requestsService.remove(id), onSuccess: invalidate });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => requestsService.remove(id),
+    onSuccess: (_data, id) => {
+      // Remove o detalhe do cache para não refazer o GET de um registro que não existe mais.
+      queryClient.removeQueries({ queryKey: requestKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: ['requests', 'list'] });
+      void queryClient.invalidateQueries({ queryKey: requestKeys.dashboard });
+    },
+  });
 }
 
 export function useUpdateStatus() {
