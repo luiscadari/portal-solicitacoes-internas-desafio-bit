@@ -95,7 +95,7 @@ Como o Nginx (ou o proxy do Vite em desenvolvimento) serve a SPA e a API **na me
 
 | Ferramenta | Uso | Justificativa |
 | --- | --- | --- |
-| **Jest** 29 + **ts-jest** | Backend e frontend | Executor de testes exigido no desafio, maduro, com *mocks*, *snapshots* e cobertura nativos. O ts-jest compila TypeScript com checagem de tipos, de modo que os próprios testes também são verificados pelo compilador. |
+| **Jest** 29 + **ts-jest** | Backend e frontend | Executor de testes, maduro, com *mocks*, *snapshots* e cobertura nativos. O ts-jest compila TypeScript com checagem de tipos, de modo que os próprios testes também são verificados pelo compilador. |
 | **Supertest** | Backend | Testes de integração HTTP sobre a aplicação Express real (middlewares, validação, autenticação, autorização e serialização), sem subir servidor. |
 | **jest-mock-extended** | Backend | *Mock* profundo e tipado do `PrismaClient`. Os testes rodam em segundos, sem banco, e verificam exatamente as consultas enviadas ao ORM (filtros, escopo por usuário, histórico). |
 | **Testing Library** (React, user-event, jest-dom) + **jsdom** | Frontend | Testes orientados ao comportamento do usuário (encontrar por rótulo/papel, digitar, clicar), resistentes a refatorações internas, que reforçam a acessibilidade da interface. |
